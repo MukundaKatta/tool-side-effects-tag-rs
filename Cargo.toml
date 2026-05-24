@@ -1,0 +1,25 @@
+[package]
+name = "tool-side-effects-tag"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "Declare what an LLM agent tool actually does (read, write, idempotent, destructive, external, expensive, network) so the scheduler / retry layer can decide what's parallel-safe and retry-safe. Zero runtime deps; serde optional."
+authors = ["Mukunda Rao Katta <mukunda.vjcs6@gmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/MukundaKatta/tool-side-effects-tag-rs"
+homepage = "https://github.com/MukundaKatta/tool-side-effects-tag-rs"
+documentation = "https://docs.rs/tool-side-effects-tag"
+readme = "README.md"
+keywords = ["llm", "agents", "side-effects", "idempotent"]
+categories = ["api-bindings", "data-structures"]
+exclude = [".github/*", "target/*"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[dev-dependencies]
+serde_json = "1.0.150"
