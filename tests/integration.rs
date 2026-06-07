@@ -49,7 +49,10 @@ fn from_str_parses_every_variant() {
         SideEffect::from_str("expensive").unwrap(),
         SideEffect::Expensive
     );
-    assert_eq!(SideEffect::from_str("network").unwrap(), SideEffect::Network);
+    assert_eq!(
+        SideEffect::from_str("network").unwrap(),
+        SideEffect::Network
+    );
 }
 
 #[test]
@@ -153,7 +156,9 @@ fn parallel_safe_when_read_only() {
 
 #[test]
 fn parallel_safe_read_plus_network_is_ok() {
-    let s: SideEffects = [SideEffect::Read, SideEffect::Network].into_iter().collect();
+    let s: SideEffects = [SideEffect::Read, SideEffect::Network]
+        .into_iter()
+        .collect();
     assert!(is_parallel_safe(&s));
 }
 
@@ -281,6 +286,55 @@ fn tag_can_wrap_any_struct() {
     // The Tag itself satisfies HasSideEffects.
     let from_trait = tag.side_effects();
     assert!(from_trait.contains(SideEffect::Destructive));
+}
+
+// ---- additional coverage ------------------------------------------------
+
+#[test]
+fn as_str_and_from_str_round_trip_every_variant() {
+    let all = [
+        SideEffect::Read,
+        SideEffect::Write,
+        SideEffect::Idempotent,
+        SideEffect::Destructive,
+        SideEffect::External,
+        SideEffect::Expensive,
+        SideEffect::Network,
+    ];
+    for effect in all {
+        let parsed = SideEffect::from_str(effect.as_str()).unwrap();
+        assert_eq!(parsed, effect);
+    }
+}
+
+#[test]
+fn default_set_is_empty() {
+    let s = SideEffects::default();
+    assert!(s.is_empty());
+    assert_eq!(s, SideEffects::new());
+}
+
+#[test]
+fn not_parallel_safe_when_write_only() {
+    // Write with no Read is still not parallel-safe.
+    let s: SideEffects = [SideEffect::Write].into_iter().collect();
+    assert!(!is_parallel_safe(&s));
+}
+
+#[test]
+fn not_parallel_safe_when_idempotent_only() {
+    // Idempotent without Read does not make a tool parallel-safe.
+    let s: SideEffects = [SideEffect::Idempotent].into_iter().collect();
+    assert!(!is_parallel_safe(&s));
+}
+
+#[test]
+fn idempotent_overrides_write_for_retry_but_not_parallel() {
+    let s: SideEffects = [SideEffect::Write, SideEffect::Idempotent]
+        .into_iter()
+        .collect();
+    assert!(is_retry_safe(&s));
+    assert!(!is_parallel_safe(&s));
 }
 
 // ---- serde (only when the feature is on) -------------------------------

@@ -95,7 +95,7 @@ pub enum SideEffect {
 }
 
 impl SideEffect {
-    /// Stable string slug used by [`Display`] and [`FromStr`].
+    /// Stable string slug used by [`Display`](fmt::Display) and [`FromStr`].
     pub fn as_str(&self) -> &'static str {
         match self {
             SideEffect::Read => "read",
